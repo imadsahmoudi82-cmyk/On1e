@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONE 1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --p: #6c5ce7; --bg: #ffffff; --border: #f0f0f0; --text: #2d3436; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: sans-serif; }
+        
+        /* حل مشكلة الشاشة البيضاء */
+        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:9999; display:flex; justify-content:center; align-items:center; }
+        body { background: var(--bg); margin: 0; padding-bottom: 70px; display:none; }
+
+        header { padding: 15px; text-align: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: #fff; z-index: 100; }
+        .logo { font-size: 20px; font-weight: bold; color: var(--p); letter-spacing: 1px; }
+
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ستايل القوائم كما في صورك */
+        .settings-group { background: #fff; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 20px; overflow: hidden; }
+        .setting-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-item i { width: 30px; color: var(--p); font-size: 18px; }
+        .setting-item span { flex: 1; font-size: 14px; color: var(--text); }
+        .setting-item.danger span { color: #ff4757; }
+
+        /* التنقل السفلي الأصلي */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0,0,0,0.02); }
+        .nav-item { color: #ccc; font-size: 22px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--p); }
+        .add-btn { background: var(--p); color: #fff !important; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -30px; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3); }
+
+        /* رسائل التنبيه */
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 12px; display: none; z-index: 10000; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen"><i class="fas fa-circle-notch fa-spin" style="font-size:30px; color:var(--p)"></i></div>
+
+    <header><div class="logo">ONE 1</div></header>
+
+    <div id="home" class="page active">
+        <div style="text-align:center; margin-top:100px; color:#ccc;">
+            <i class="fas fa-home" style="font-size:60px; margin-bottom:15px;"></i>
+            <p>لا توجد منشورات حالياً</p>
+        </div>
+    </div>
+
+    <div id="profile" class="page">
+        <div style="text-align:center; margin-bottom:30px;">
+            <img id="user-img" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--p);">
+            <h3 id="display-name" style="margin:10px 0 5px;">مستخدم</h3>
+            <p id="display-email" style="font-size:12px; color:#999; margin:0;"></p>
+        </div>
+
+        <div class="settings-group">
+            <div class="setting-item" onclick="showModal('name')"><i class="far fa-user"></i><span>تغيير الاسم</span></div>
+            <div class="setting-item" onclick="showModal('pass')"><i class="fas fa-lock"></i><span>تغيير كلمة السر</span></div>
+            <div class="setting-item danger" onclick="deleteAccount()"><i class="far fa-trash-alt"></i><span>حذف الحساب نهائياً</span></div>
+        </div>
+
+        <div class="settings-group">
+            <div class="setting-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>تسجيل الخروج</span></div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="switchTab('home', this)"><i class="fas fa-home"></i></div>
+        <div class="nav-item" onclick="showToast('الميزة قريباً')"><i class="far fa-heart"></i></div>
+        <div class="nav-item add-btn"><i class="fas fa-plus"></i></div>
+        <div class="nav-item" onclick="showToast('الدردشة قريباً')"><i class="far fa-comment"></i></div>
+        <div class="nav-item" onclick="switchTab('profile', this)"><i class="far fa-user-circle"></i></div>
+    </nav>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDj1jWQZHnELXe_eFkfGpi3F3_jPGhPm7I", authDomain: "one1-95c0e.firebaseapp.com", projectId: "one1-95c0e", appId: "1:1090900617422:web:f6e9c11bb7a090c39ec89f" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // مراقبة حالة الدخول ومنع التعليق
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = doc(db, "users", user.uid);
+                const snap = await getDoc(userDoc);
+                
+                if (snap.exists()) {
+                    document.getElementById('display-name').innerText = snap.data().name;
+                    document.getElementById('display-email').innerText = user.email;
+                    if(snap.data().photo) document.getElementById('user-img').src = snap.data().photo;
+                    
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.body.style.display = 'block';
+                } else {
+                    // إذا دخل المستخدم ولكن لا يوجد له بيانات (محذوف مثلاً)
+                    signOut(auth);
+                }
+            } else {
+                window.location.href = "auth.html"; 
+            }
+        });
+
+        // وظيفة حذف الحساب نهائياً
+        window.deleteAccount = async () => {
+            if(confirm("هل أنت متأكد من حذف الحساب نهائياً؟ لا يمكن التراجع!")) {
+                try {
+                    const user = auth.currentUser;
+                    // 1. حذف البيانات من Firestore أولاً ليصبح البريد متاحاً للتسجيل مجدداً
+                    await deleteDoc(doc(db, "users", user.uid));
+                    // 2. حذف الحساب من Auth
+                    await deleteUser(user);
+                    alert("تم حذف حسابك بنجاح.");
+                    window.location.href = "auth.html";
+                } catch (e) {
+                    alert("يرجى تسجيل الدخول مجدداً للقيام بهذه العملية الحساسة.");
+                }
+            }
+        };
+
+        window.switchTab = (id, el) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        };
+
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
+        };
+
+        window.logout = () => signOut(auth);
+    </script>
+</body>
+</html>
