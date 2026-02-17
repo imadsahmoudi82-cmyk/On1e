@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONE 1 | PRO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --p: #6c5ce7; --bg: #ffffff; --gray: #f8f9fa; --border: #eee; --text: #2d3436; --red: #ff4757; --green: #2ecc71; --off: #bdc3c7; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Tahoma, sans-serif; transition: 0.2s ease-in-out; }
+        
+        /* شاشة التحقق - تم تحسينها */
+        #auth-check { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; display: none; }
+        
+        header { padding: 12px 20px; display: flex; align-items: center; background: #fff; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .logo { font-size: 18px; font-weight: 900; color: var(--p); margin: auto; }
+
+        .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; min-height: 80vh; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .profile-top { display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+        .avatar-container { position: relative; width: 100px; height: 100px; margin-bottom: 15px; }
+        .avatar-container img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--border); object-fit: cover; }
+        .status-dot { position: absolute; bottom: 8px; right: 8px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; background: var(--green); }
+        .status-dot.offline { background: var(--off); }
+        
+        .verify-badge { color: var(--p); font-size: 20px; margin-right: 8px; display: none; }
+
+        .group-header { padding: 15px 20px 5px; font-size: 12px; color: #a4b0be; font-weight: bold; }
+        .settings-group { background: #fff; border: 1px solid var(--border); border-radius: 18px; margin: 0 15px 15px; overflow: hidden; }
+        .setting-item { display: flex; align-items: center; padding: 14px 15px; cursor: pointer; border-bottom: 1px solid var(--border); }
+        .setting-item i { width: 30px; color: var(--p); font-size: 16px; margin-left: 10px; margin-right: 10px; }
+        .setting-text { flex: 1; font-size: 14px; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #f0f0f0; z-index: 2000; }
+        .nav-item { color: #bdc3c7; font-size: 22px; cursor: pointer; }
+        .nav-item.active { color: var(--p); }
+
+        .support-box { margin-top: 30px; padding: 15px; border: 2px dashed var(--border); border-radius: 15px; text-align: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: #fff; width: 90%; max-width: 320px; border-radius: 25px; padding: 25px; text-align: center; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body id="appBody">
+
+    <div id="auth-check">
+        <div style="width:40px; height:40px; border:4px solid var(--gray); border-top-color:var(--p); border-radius:50%; animation: spin 1s infinite linear;"></div>
+        <div id="welcome-user" style="margin-top:15px; font-weight:bold; color:var(--p);">جاري التحميل...</div>
+    </div>
+
+    <header><div class="logo">ONE 1</div></header>
+
+    <div id="home" class="page active">
+        <div style="text-align:center; padding-top:100px;">
+            <i class="fa-solid fa-clone" style="font-size:50px; opacity:0.1; color:var(--p)"></i>
+            <p id="txt-no-posts">لم يتم نشر شيء بعد</p>
+        </div>
+    </div>
+
+    <div id="chats" class="page">
+        <div style="text-align:center;">
+            <i class="fa-regular fa-comments" style="font-size:50px; opacity:0.1; color:var(--p)"></i>
+            <p id="txt-no-chats">لا توجد محادثات حالياً</p>
+            <div class="support-box">
+                <a href="https://wa.me/972592738901" style="text-decoration:none; color:var(--p); font-weight:bold;">
+                    <i class="fa-brands fa-whatsapp"></i> <span id="txt-support">تواصل مع الدعم الفني</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile" class="page">
+        <div class="profile-top">
+            <div class="avatar-container" onclick="document.getElementById('fInp').click()">
+                <img src="" id="uImg">
+                <div id="statusDot" class="status-dot"></div>
+                <input type="file" id="fInp" hidden onchange="upImg(this)">
+            </div>
+            <div style="display:flex; align-items:center;">
+                <h2 id="uName" style="margin:0">...</h2>
+                <i class="fa-solid fa-badge-check verify-badge" id="vBadge"></i>
+            </div>
+        </div>
+
+        <div class="group-header" id="head-acc">إعدادات الحساب</div>
+        <div class="settings-group">
+            <div class="setting-item" onclick="openM('name')"><i class="fa-regular fa-user"></i><span class="setting-text" id="btn-name">تغيير الاسم</span></div>
+            <div class="setting-item" onclick="openM('del')" style="color:var(--red)"><i class="fa-solid fa-trash-can"></i><span class="setting-text" id="btn-del">حذف الحساب</span></div>
+        </div>
+
+        <div class="group-header" id="head-priv">الخصوصية</div>
+        <div class="settings-group">
+            <div class="setting-item">
+                <i class="fa-solid fa-eye-slash"></i>
+                <span class="setting-text" id="btn-status">إظهار حالة المتصل</span>
+                <input type="checkbox" id="statusToggle" checked onchange="toggleOnlineStatus(this)" style="width:18px; height:18px;">
+            </div>
+        </div>
+
+        <div class="group-header" id="head-lang">اللغة</div>
+        <div class="settings-group">
+            <div class="setting-item" onclick="openM('lang')"><i class="fa-solid fa-globe"></i><span class="setting-text" id="btn-lang-val">العربية</span></div>
+        </div>
+
+        <div class="settings-group" style="margin-top:20px;">
+            <div class="setting-item" onclick="signOut(auth)" style="color:var(--red)"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="setting-text" id="btn-logout">تسجيل الخروج</span></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="tab('profile', this)"><i class="fa-solid fa-circle-user"></i></div>
+        <div class="nav-item" onclick="tab('chats', this)"><i class="fa-regular fa-comment"></i></div>
+        <div class="nav-item active" onclick="tab('home', this)"><i class="fa-solid fa-house"></i></div>
+    </nav>
+
+    <div id="m" class="modal">
+        <div class="modal-content" id="mContent">
+            <h3 id="mT"></h3>
+            <div id="mBody"></div>
+            <p onclick="closeM()" style="margin-top:20px; cursor:pointer; color:#aaa;">إغلاق</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const config = { apiKey: "AIzaSyDj1jWQZHnELXe_eFkfGpi3F3_jPGhPm7I", authDomain: "one1-95c0e.firebaseapp.com", projectId: "one1-95c0e", appId: "1:1090900617422:web:f6e9c11bb7a090c39ec89f" };
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // وظيفة لإظهار التطبيق ومنع التعليق
+        function showApp() {
+            document.getElementById('auth-check').style.display = 'none';
+            document.body.style.display = 'block';
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // مؤقت أمان: إذا لم يستجب السيرفر خلال 4 ثواني، افتح الواجهة بأي حال
+                const safetyTimeout = setTimeout(showApp, 4000);
+
+                onSnapshot(doc(db, "users", user.uid), (ds) => {
+                    if (ds.exists()) {
+                        clearTimeout(safetyTimeout);
+                        const d = ds.data();
+                        document.getElementById('uName').innerText = d.name || "User";
+                        document.getElementById('uImg').src = d.photo || `https://ui-avatars.com/api/?name=${d.name}`;
+                        document.getElementById('vBadge').style.display = d.isVerified ? 'inline-block' : 'none';
+                        showApp();
+                    } else {
+                        // إذا دخل المستخدم ولم يجد بياناته (بسبب حذف سابق)
+                        showApp(); 
+                    }
+                });
+            } else { window.location.href = "auth.html"; }
+        });
+
+        window.toggleOnlineStatus = (cb) => {
+            const dot = document.getElementById('statusDot');
+            dot.classList.toggle('offline', !cb.checked);
+        };
+
+        window.setLang = (lang) => {
+            const isAr = lang === 'ar';
+            document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+            const l = isAr ? {
+                noPosts: "لم يتم نشر شيء بعد", noChats: "لا توجد محادثات حالياً", support: "تواصل مع الدعم الفني",
+                acc: "إعدادات الحساب", name: "تغيير الاسم", del: "حذف الحساب", priv: "الخصوصية",
+                status: "إظهار حالة المتصل", langHead: "اللغة", logout: "تسجيل الخروج", currentLang: "العربية"
+            } : {
+                noPosts: "No posts yet", noChats: "No conversations yet", support: "Contact Support",
+                acc: "Account Settings", name: "Change Name", del: "Delete Account", priv: "Privacy",
+                status: "Show Online Status", langHead: "Language", logout: "Logout", currentLang: "English"
+            };
+            document.getElementById('txt-no-posts').innerText = l.noPosts;
+            document.getElementById('txt-no-chats').innerText = l.noChats;
+            document.getElementById('txt-support').innerText = l.support;
+            document.getElementById('head-acc').innerText = l.acc;
+            document.getElementById('btn-name').innerText = l.name;
+            document.getElementById('btn-del').innerText = l.del;
+            document.getElementById('head-priv').innerText = l.priv;
+            document.getElementById('btn-status').innerText = l.status;
+            document.getElementById('head-lang').innerText = l.langHead;
+            document.getElementById('btn-lang-val').innerText = l.currentLang;
+            document.getElementById('btn-logout').innerText = l.logout;
+            closeM();
+        };
+
+        window.tab = (id, el) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        };
+
+        window.openM = (type) => {
+            const m = document.getElementById('m');
+            const mT = document.getElementById('mT');
+            const mBody = document.getElementById('mBody');
+            m.style.display = 'flex';
+            
+            if(type === 'lang') {
+                mT.innerText = "Language / اللغة";
+                mBody.innerHTML = `<div onclick="setLang('ar')" style="padding:15px; border:1px solid #eee; border-radius:10px; margin-bottom:10px; cursor:pointer;">العربية</div>
+                                   <div onclick="setLang('en')" style="padding:15px; border:1px solid #eee; border-radius:10px; cursor:pointer;">English</div>`;
+            } else if(type === 'name') {
+                mT.innerText = "تغيير الاسم";
+                mBody.innerHTML = `<input type="text" id="nInp" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #eee;">
+                                   <button onclick="saveName()" style="width:100%; padding:10px; background:var(--p); color:white; border:none; border-radius:8px;">حفظ</button>`;
+            } else if(type === 'del') {
+                mT.innerText = "حذف الحساب";
+                mBody.innerHTML = `<p style="color:red; font-size:13px;">هل أنت متأكد؟ سيتم حذف بياناتك نهائياً.</p>
+                                   <button onclick="confirmDelete()" style="width:100%; padding:10px; background:var(--red); color:white; border:none; border-radius:8px;">تأكيد الحذف</button>`;
+            }
+        };
+
+        window.closeM = () => document.getElementById('m').style.display = 'none';
+
+        window.saveName = async () => {
+            const n = document.getElementById('nInp').value;
+            if(n) {
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { name: n });
+                closeM();
+            }
+        };
+
+        window.confirmDelete = async () => {
+            const user = auth.currentUser;
+            try {
+                // حذف الداتا أولاً عشان الاسم والبريد يفضوا
+                await deleteDoc(doc(db, "users", user.uid));
+                // حذف اليوزر من السيستم
+                await deleteUser(user);
+                window.location.href = "auth.html";
+            } catch (e) {
+                alert("يرجى تسجيل الخروج والدخول مرة أخرى ثم الحذف (إجراء أمان)");
+                signOut(auth);
+            }
+        };
+
+        window.upImg = (input) => {
+            const file = input.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = async (e) => await updateDoc(doc(db, "users", auth.currentUser.uid), { photo: e.target.result });
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.signOut = () => signOut(auth);
+    </script>
+</body>
+</html>
