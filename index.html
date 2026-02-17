@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONE 1 | PRO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { 
+            --p: #6c5ce7; --p-light: #efeeff; --bg: #f8f9fd; 
+            --card: #ffffff; --text: #2d3436; --text-light: #636e72;
+            --red: #ff4757; --green: #00b894; --border: #edf2f7;
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Roboto, sans-serif; }
+        
+        body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; overflow-x: hidden; display: none; }
+
+        /* Loader */
+        #auth-check { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--p-light); border-top-color: var(--p); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Header & Search */
+        header { 
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            padding: 10px 15px; position: sticky; top: 0; z-index: 1000;
+            display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border);
+        }
+        .btn-w { 
+            width: 40px; height: 40px; background: var(--p); color: #fff; 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.2);
+        }
+        .search-box { 
+            flex: 1; background: var(--p-light); border-radius: 12px; 
+            display: flex; align-items: center; padding: 0 12px; height: 40px;
+        }
+        .search-box input { border: none; background: none; outline: none; width: 100%; font-size: 14px; color: var(--text); }
+
+        /* Pages */
+        .page { display: none; padding: 20px 15px; animation: slideUp 0.4s ease-out; }
+        .page.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Profile Section */
+        .profile-card { background: var(--card); border-radius: 24px; padding: 25px; text-align: center; border: 1px solid var(--border); margin-bottom: 20px; position: relative; }
+        .visits-badge { position: absolute; top: 15px; left: 15px; background: var(--p-light); color: var(--p); padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        .avatar-box { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; cursor: pointer; }
+        .avatar-box img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .status-indicator { position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff; background: var(--green); }
+        .status-indicator.offline { background: var(--off); }
+        
+        .verify-icon { color: #0984e3; margin-right: 5px; font-size: 18px; }
+
+        /* Settings Style */
+        .group-label { padding: 0 10px 10px; font-size: 13px; color: var(--text-light); font-weight: bold; }
+        .settings-list { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; }
+        .s-item { 
+            display: flex; align-items: center; padding: 16px 18px; cursor: pointer; 
+            border-bottom: 1px solid var(--border); transition: 0.2s;
+        }
+        .s-item:last-child { border-bottom: none; }
+        .s-item:active { background: var(--p-light); }
+        .s-item i { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: var(--p-light); color: var(--p); border-radius: 10px; font-size: 16px; margin-left: 12px; }
+        .s-item span { flex: 1; font-size: 15px; font-weight: 500; }
+        
+        /* Bottom Nav */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--border); z-index: 2000; }
+        .nav-link { color: #b2bec3; font-size: 22px; cursor: pointer; transition: 0.3s; }
+        .nav-link.active { color: var(--p); transform: translateY(-3px); }
+        .nav-center { background: var(--p); color: #fff !important; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; border: 5px solid #fff; box-shadow: 0 8px 20px rgba(108,92,231,0.3); }
+
+        /* Modern Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index: 5000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { 
+            background: #fff; width: 100%; max-width: 380px; border-radius: 28px; 
+            padding: 25px; text-align: center; animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal-box h3 { margin: 0 0 10px; font-size: 20px; }
+        .modal-box p { color: var(--text-light); font-size: 14px; margin-bottom: 20px; }
+        .btn-prime { background: var(--p); color: #fff; border: none; padding: 12px 25px; border-radius: 14px; font-weight: bold; width: 100%; cursor: pointer; }
+        
+        .lang-btn { padding: 15px; border-radius: 12px; background: var(--p-light); margin-bottom: 10px; font-weight: bold; cursor: pointer; color: var(--p); }
+
+        /* Toast */
+        .toast-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #2d3436; color: #fff; padding: 10px 22px; border-radius: 50px; font-size: 13px; z-index: 9999; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body id="appBody">
+
+    <div id="auth-check"><div class="spinner"></div></div>
+
+    <header id="mainHeader">
+        <div class="btn-w" onclick="showDev('سيرفر W')">W</div>
+        <div class="search-box">
+            <i class="fa fa-search" style="color:#b2bec3; margin-left:8px"></i>
+            <input type="text" placeholder="ابحث عن أي شيء...">
+        </div>
+    </header>
+
+    <div id="home" class="page active">
+        <div style="text-align:center; padding-top:80px; color:#b2bec3;">
+            <i class="fa-solid fa-shapes" style="font-size:60px; opacity:0.2; margin-bottom:15px"></i>
+            <p>لا توجد منشورات حتى الآن</p>
+        </div>
+    </div>
+
+    <div id="fav" class="page">
+        <h2 style="margin:0 0 20px 10px">المفضلة</h2>
+        <div style="text-align:center; padding-top:60px; color:#b2bec3;">
+            <i class="fa-regular fa-heart" style="font-size:60px; opacity:0.2; margin-bottom:15px"></i>
+            <p>قائمة المفضلة فارغة</p>
+        </div>
+    </div>
+
+    <div id="chats" class="page">
+        <h2 style="margin:0 0 20px 10px">المحادثات</h2>
+        <div style="text-align:center; padding-top:60px; color:#b2bec3;">
+            <i class="fa-regular fa-comments" style="font-size:60px; opacity:0.2; margin-bottom:15px"></i>
+            <p>ابدأ محادثتك الأولى الآن</p>
+        </div>
+        <div style="position:fixed; bottom:110px; left:20px; right:20px; background:var(--p-light); padding:15px; border-radius:18px; text-align:center;">
+            <a href="https://wa.me/972592738901" style="text-decoration:none; color:var(--p); font-weight:bold; font-size:14px;">
+                <i class="fa-brands fa-whatsapp"></i> تواصل مع الدعم الفني
+            </a>
+        </div>
+    </div>
+
+    <div id="profile" class="page">
+        <div class="profile-card">
+            <div class="visits-badge"><i class="fa-regular fa-eye"></i> <span id="vCount">0</span></div>
+            <div class="avatar-box" onclick="document.getElementById('fInp').click()">
+                <img id="uImg" src="">
+                <div id="pDot" class="status-indicator"></div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:center;">
+                <h2 id="uName" style="margin:0">...</h2>
+                <i class="fa-solid fa-circle-check verify-icon" id="vBadge" style="display:none"></i>
+            </div>
+            <p id="uEmail" style="margin:5px 0 0; font-size:13px; color:var(--text-light)"></p>
+            <input type="file" id="fInp" hidden onchange="upPhoto(this)">
+        </div>
+
+        <div class="group-label" id="lbl-acc">قسم الحساب</div>
+        <div class="settings-list">
+            <div class="s-item" onclick="changeName()"><i class="fa-regular fa-pen-to-square"></i><span id="txt-name">تغيير الاسم</span></div>
+            <div class="s-item" onclick="resetPass()"><i class="fa-solid fa-fingerprint"></i><span id="txt-pass">كلمة المرور</span></div>
+            <div class="s-item" onclick="delAcc()" style="color:var(--red)"><i class="fa-solid fa-user-xmark"></i><span id="txt-del">حذف الحساب</span></div>
+        </div>
+
+        <div class="group-label" id="lbl-priv">الخصوصية</div>
+        <div class="settings-list">
+            <div class="s-item" onclick="openBlocked()"><i class="fa-solid fa-ban"></i><span id="txt-block">المحظورين</span></div>
+            <div class="s-item">
+                <i class="fa-solid fa-moon"></i><span id="txt-status">الظهور متصل</span>
+                <input type="checkbox" id="onlineToggle" checked onchange="toggleStatus(this)" style="width:20px; height:20px; accent-color:var(--p)">
+            </div>
+        </div>
+
+        <div class="group-label" id="lbl-lang">اللغة</div>
+        <div class="settings-list">
+            <div class="s-item" onclick="openLang()"><i class="fa-solid fa-globe"></i><span id="curr-lang">العربية</span></div>
+        </div>
+
+        <div class="settings-list" style="margin-top:10px;">
+            <div class="s-item" onclick="logout()" style="color:var(--red)"><i class="fa-solid fa-door-open"></i><span id="txt-logout">تسجيل الخروج</span></div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-link active" onclick="tab('home', this)"><i class="fa-solid fa-house-chimney"></i></div>
+        <div class="nav-link" onclick="tab('fav', this)"><i class="fa-solid fa-heart"></i></div>
+        <div class="nav-link nav-center" onclick="showDev('النشر')"><i class="fa-solid fa-plus"></i></div>
+        <div class="nav-link" onclick="tab('chats', this)"><i class="fa-solid fa-message"></i></div>
+        <div class="nav-link" onclick="tab('profile', this)"><i class="fa-solid fa-circle-user"></i></div>
+    </nav>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modalIcon" style="font-size:40px; color:var(--p); margin-bottom:15px"></div>
+            <h3 id="modalTitle">عنوان الواجهة</h3>
+            <div id="modalBody"></div>
+            <button class="btn-prime" style="margin-top:20px" onclick="closeModal()">فهمت</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast-msg"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const config = { apiKey: "AIzaSyDj1jWQZHnELXe_eFkfGpi3F3_jPGhPm7I", authDomain: "one1-95c0e.firebaseapp.com", projectId: "one1-95c0e", appId: "1:1090900617422:web:f6e9c11bb7a090c39ec89f" };
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
+                if (!snap.exists()) {
+                    await setDoc(userRef, { name: user.displayName || "مستخدم جديد", email: user.email, isVerified: false, visits: 0, photo: "", blocked: [] });
+                }
+
+                onSnapshot(userRef, (ds) => {
+                    if (ds.exists()) {
+                        const d = ds.data();
+                        document.getElementById('uName').innerText = d.name;
+                        document.getElementById('uEmail').innerText = user.email;
+                        document.getElementById('vCount').innerText = d.visits || 0;
+                        document.getElementById('uImg').src = d.photo || `https://ui-avatars.com/api/?name=${d.name}&background=6c5ce7&color=fff`;
+                        document.getElementById('vBadge').style.display = d.isVerified ? 'inline-block' : 'none';
+                        document.getElementById('auth-check').style.display = 'none';
+                        document.body.style.display = 'block';
+                    }
+                });
+            } else { window.location.href = "auth.html"; }
+        });
+
+        // Navigation
+        window.tab = (id, el) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+            document.getElementById('mainHeader').style.display = (id === 'profile' || id === 'fav' || id === 'chats') ? 'none' : 'flex';
+        };
+
+        // Modal Controls
+        window.showDev = (feature) => {
+            document.getElementById('modalIcon').innerHTML = '<i class="fa-solid fa-rocket-launch"></i>';
+            document.getElementById('modalTitle').innerText = "قيد التطوير";
+            document.getElementById('modalBody').innerHTML = `<p>ميزة <b>${feature}</b> قيد البرمجة حالياً وسوف تتوفر في التحديث القادم.</p>`;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        };
+
+        window.openLang = () => {
+            document.getElementById('modalIcon').innerHTML = '<i class="fa-solid fa-language"></i>';
+            document.getElementById('modalTitle').innerText = "لغة التطبيق";
+            document.getElementById('modalBody').innerHTML = `
+                <div class="lang-btn" onclick="setLang('ar')">العربية</div>
+                <div class="lang-btn" onclick="setLang('en')">English</div>
+            `;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        };
+
+        window.openBlocked = async () => {
+            document.getElementById('modalIcon').innerHTML = '<i class="fa-solid fa-user-shield"></i>';
+            document.getElementById('modalTitle').innerText = "قائمة المحظورين";
+            const snap = await getDoc(doc(db, "users", auth.currentUser.uid));
+            const blocked = snap.data().blocked || [];
+            if(blocked.length === 0) {
+                document.getElementById('modalBody').innerHTML = "<p>لا توجد حسابات في قائمة الحظر حالياً.</p>";
+            } else {
+                document.getElementById('modalBody').innerHTML = "<p>لديك " + blocked.length + " مستخدمين في القائمة.</p>";
+            }
+            document.getElementById('modalOverlay').style.display = 'flex';
+        };
+
+        window.setLang = (lang) => {
+            const isAr = lang === 'ar';
+            document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+            document.getElementById('lbl-acc').innerText = isAr ? "قسم الحساب" : "Account Settings";
+            document.getElementById('curr-lang').innerText = isAr ? "العربية" : "English";
+            // ... يمكنك إضافة ترجمة بقية النصوص هنا بسهولة
+            closeModal();
+            showToast(isAr ? "تم تغيير اللغة" : "Language Changed");
+        };
+
+        window.closeModal = () => document.getElementById('modalOverlay').style.display = 'none';
+
+        // Profile Actions
+        window.toggleStatus = (cb) => { 
+            document.getElementById('pDot').className = cb.checked ? "status-indicator" : "status-indicator offline";
+            showToast(cb.checked ? "أنت الآن متصل" : "أنت الآن مخفي");
+        };
+
+        window.upPhoto = (input) => {
+            const file = input.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = async (e) => { 
+                    await updateDoc(doc(db, "users", auth.currentUser.uid), { photo: e.target.result });
+                    showToast("تم تحديث الصورة");
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.showToast = (m) => {
+            const t = document.getElementById('toast'); t.innerText = m;
+            t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500);
+        };
+
+        window.changeName = async () => {
+            const n = prompt("الاسم الجديد:");
+            if(n) {
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { name: n });
+                showToast("تم تحديث الاسم");
+            }
+        };
+
+        window.resetPass = () => {
+            sendPasswordResetEmail(auth, auth.currentUser.email).then(() => {
+                showToast("تفقد بريدك الإلكتروني");
+            });
+        };
+
+        window.logout = () => signOut(auth);
+    </script>
+</body>
+</html>
