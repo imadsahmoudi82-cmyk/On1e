@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONE 1 | PRO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --p: #6c5ce7; --bg: #ffffff; --gray: #f8f9fa; --border: #eee; --text: #2d3436; --red: #ff4757; --green: #2ecc71; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; }
+        header { padding: 12px 20px; display: flex; align-items: center; background: #fff; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .logo { font-size: 18px; font-weight: 900; color: var(--p); margin: auto; }
+        
+        .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; }
+        .empty-icon { font-size: 55px; color: var(--p); opacity: 0.15; margin-bottom: 15px; }
+
+        .profile-top { display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+        .avatar-container { position: relative; width: 100px; height: 100px; margin-bottom: 15px; }
+        .avatar-container img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--border); object-fit: cover; }
+        .status-dot { position: absolute; bottom: 8px; right: 8px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; background: var(--green); }
+        
+        /* شارة التوثيق البنفسجية المشرشرة بالصح */
+        .verify-badge { color: var(--p); font-size: 19px; margin-right: 8px; display: none; }
+
+        .stats-row { display: flex; gap: 30px; margin: 15px 0; }
+        .stat-item { text-align: center; }
+        .stat-val { display: block; font-weight: 800; font-size: 18px; }
+        .stat-lab { font-size: 12px; color: #95a5a6; }
+
+        .group-header { padding: 15px 20px 5px; font-size: 12px; color: #a4b0be; font-weight: bold; text-align: right; }
+        .settings-group { background: #fff; border: 1px solid var(--border); border-radius: 18px; margin: 0 15px 15px; overflow: hidden; }
+        .setting-item { display: flex; align-items: center; padding: 14px 15px; cursor: pointer; border-bottom: 1px solid var(--border); text-align: right; }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-item i { width: 30px; color: var(--p); font-size: 16px; margin-left: 10px; }
+        .setting-text { flex: 1; font-size: 14px; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #f0f0f0; z-index: 2000; }
+        .nav-item { color: #bdc3c7; font-size: 22px; cursor: pointer; }
+        .nav-item.active { color: var(--p); }
+        .plus-btn { background: var(--p); color: #fff !important; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -30px; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: #fff; width: 90%; max-width: 320px; border-radius: 25px; padding: 25px; text-align: center; }
+        .modal-content input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; margin: 15px 0; text-align: center; outline: none; }
+        #mBtn { background: var(--p); color: #fff; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        
+        .support-link { text-align: center; font-size: 11px; color: #ccc; margin: 10px 0; text-decoration: none; display: block; }
+    </style>
+</head>
+<body>
+
+    <header><div class="logo">ONE 1</div></header>
+
+    <div id="home" class="page active">
+        <div class="empty-state">
+            <i class="fa-solid fa-clone empty-icon"></i>
+            <div class="empty-text">لم يتم نشر شيء بعد</div>
+        </div>
+    </div>
+
+    <div id="chats" class="page">
+        <div class="empty-state">
+            <i class="fa-regular fa-comments empty-icon"></i>
+            <div class="empty-text">لا توجد محادثات حالياً</div>
+            <a href="https://wa.me/972592738901" class="support-link" style="margin-top:20px">الدعم الفني والتبليغ عن مشكلة</a>
+        </div>
+    </div>
+
+    <div id="favs" class="page">
+        <div class="empty-state">
+            <i class="fa-regular fa-heart empty-icon"></i>
+            <div class="empty-text">لم يتم إضافة شيء إلى المفضلة بعد</div>
+        </div>
+    </div>
+
+    <div id="profile" class="page">
+        <div class="profile-top">
+            <div class="avatar-container" onclick="document.getElementById('fInp').click()">
+                <img src="" id="uImg">
+                <div class="status-dot"></div>
+                <input type="file" id="fInp" hidden onchange="upImg(this)">
+            </div>
+            <div class="stats-row">
+                <div class="stat-item"><span class="stat-val">0</span><span class="stat-lab">منشور</span></div>
+                <div class="stat-item"><span class="stat-val">0</span><span class="stat-lab">متابع</span></div>
+                <div class="stat-item"><span class="stat-val">0</span><span class="stat-lab">أتابعه</span></div>
+            </div>
+            <div style="display:flex; align-items:center;">
+                <h2 id="uName" style="margin:0">...</h2>
+                <i class="fa-solid fa-badge-check verify-badge" id="vBadge"></i>
+            </div>
+            <p id="uEmail" style="font-size:12px; color:#aaa; margin:5px 0;"></p>
+        </div>
+
+        <div class="group-header">إعدادات الحساب</div>
+        <div class="settings-group">
+            <div class="setting-item" onclick="openM('name')"><i class="fa-regular fa-user"></i><span class="setting-text">تغيير الاسم</span></div>
+            <div class="setting-item" onclick="openM('pass')"><i class="fa-solid fa-key"></i><span class="setting-text">تغيير كلمة السر</span></div>
+            <div class="setting-item" onclick="openM('del')" style="color:var(--red)"><i class="fa-solid fa-trash-can"></i><span class="setting-text">حذف الحساب نهائياً</span></div>
+        </div>
+
+        <div class="group-header">الخصوصية</div>
+        <div class="settings-group">
+            <div class="setting-item"><i class="fa-solid fa-user-lock"></i><span class="setting-text">إدارة الحظر</span></div>
+            <div class="setting-item">
+                <i class="fa-solid fa-eye-slash"></i>
+                <span class="setting-text">إخفاء حالة المتصل</span>
+                <input type="checkbox" checked style="width:18px; height:18px;">
+            </div>
+        </div>
+
+        <div class="group-header">اللغة</div>
+        <div class="settings-group">
+            <div class="setting-item"><i class="fa-solid fa-globe"></i><span class="setting-text">اللغة (العربية)</span></div>
+        </div>
+
+        <div class="settings-group">
+            <div class="setting-item" onclick="signOut(auth)" style="color:var(--red)"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="setting-text">تسجيل الخروج</span></div>
+        </div>
+        <a href="https://wa.me/972592738901" class="support-link">الدعم الفني والتبليغ عن مشكلة</a>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="tab('profile', this)"><i class="fa-solid fa-circle-user"></i></div>
+        <div class="nav-item" onclick="tab('chats', this)"><i class="fa-regular fa-comment"></i></div>
+        <div class="nav-item plus-btn"><i class="fa-solid fa-plus"></i></div>
+        <div class="nav-item" onclick="tab('favs', this)"><i class="fa-regular fa-heart"></i></div>
+        <div class="nav-item active" onclick="tab('home', this)"><i class="fa-solid fa-house"></i></div>
+    </nav>
+
+    <div id="m" class="modal">
+        <div class="modal-content">
+            <h3 id="mT" style="margin-top:0"></h3>
+            <p id="mDesc" style="font-size:13px; color:#777; margin-bottom:15px;"></p>
+            <input type="text" id="mInp" style="display:none;">
+            <button id="mBtn" onclick="saveM()"></button>
+            <p onclick="closeM()" style="margin-top:20px; cursor:pointer; color:#aaa; font-size:12px;">إلغاء</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const config = { apiKey: "AIzaSyDj1jWQZHnELXe_eFkfGpi3F3_jPGhPm7I", authDomain: "one1-95c0e.firebaseapp.com", projectId: "one1-95c0e", appId: "1:1090900617422:web:f6e9c11bb7a090c39ec89f" };
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                onSnapshot(doc(db, "users", user.uid), (ds) => {
+                    if (ds.exists()) {
+                        const d = ds.data();
+                        document.getElementById('uName').innerText = d.name || "مستخدم";
+                        document.getElementById('uEmail').innerText = user.email;
+                        document.getElementById('uImg').src = d.photo || `https://ui-avatars.com/api/?background=6c5ce7&color=fff&name=${d.name}`;
+                        if(d.isVerified) document.getElementById('vBadge').style.display = 'inline-block';
+                    }
+                });
+            } else { window.location.href = "auth.html"; }
+        });
+
+        window.tab = (id, el) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        };
+
+        let mode = '';
+        window.openM = (m) => {
+            mode = m;
+            const modal = document.getElementById('m');
+            const inp = document.getElementById('mInp');
+            const btn = document.getElementById('mBtn');
+            modal.style.display = 'flex';
+            inp.style.display = (m === 'name') ? 'block' : 'none';
+            btn.style.background = (m === 'del') ? 'var(--red)' : 'var(--p)';
+
+            if(m === 'name') {
+                document.getElementById('mT').innerText = "تغيير الاسم";
+                document.getElementById('mDesc').innerText = "اكتب اسمك الجديد الذي سيظهر للجميع";
+                inp.placeholder = "اكتب الاسم الجديد هنا";
+                btn.innerText = "حفظ الاسم";
+            } else if(m === 'pass') {
+                document.getElementById('mT').innerText = "تغيير كلمة السر";
+                document.getElementById('mDesc').innerText = "سيتم إرسال رابط تغيير كلمة السر إلى بريدك الإلكتروني";
+                btn.innerText = "إرسال الرابط الآن";
+            } else {
+                document.getElementById('mT').innerText = "حذف الحساب نهائياً";
+                document.getElementById('mDesc').innerText = "هل أنت متأكد؟ سيتم حذف جميع بياناتك فوراً ولا يمكن استرجاعها.";
+                btn.innerText = "تأكيد الحذف الفوري";
+            }
+        };
+
+        window.closeM = () => document.getElementById('m').style.display = 'none';
+
+        window.saveM = async () => {
+            const user = auth.currentUser;
+            if(mode === 'name') {
+                const n = document.getElementById('mInp').value;
+                if(n) await updateDoc(doc(db, "users", user.uid), { name: n });
+            } else if(mode === 'pass') {
+                await sendPasswordResetEmail(auth, user.email);
+                alert("تم إرسال الرابط لبريدك");
+            } else if(mode === 'del') {
+                // حذف من الداتابيز أولاً ثم حذف المستخدم من السيستم
+                await deleteDoc(doc(db, "users", user.uid));
+                deleteUser(user).then(() => {
+                    window.location.href = "auth.html";
+                }).catch(() => {
+                    alert("للأمان، يجب تسجيل الخروج والدخول مرة أخرى قبل حذف الحساب");
+                });
+            }
+            closeM();
+        };
+
+        window.upImg = (input) => {
+            const file = input.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    await updateDoc(doc(db, "users", auth.currentUser.uid), { photo: e.target.result });
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.signOut = () => signOut(auth);
+    </script>
+</body>
+</html>
