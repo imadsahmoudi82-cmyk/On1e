@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONE 1 | PRO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --p: #6c5ce7; --bg: #ffffff; --gray: #f8f9fa; --border: #eee; --text: #2d3436; --red: #ff4757; --green: #2ecc71; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        #auth-check { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .welcome-msg { font-size: 20px; font-weight: bold; color: var(--p); opacity: 0; transform: translateY(10px); transition: 0.5s; margin-top: 15px; }
+        .welcome-msg.show { opacity: 1; transform: translateY(0); }
+
+        body { background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; display: none; }
+        header { padding: 12px 20px; display: flex; align-items: center; background: #fff; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .logo { font-size: 18px; font-weight: 900; color: var(--p); margin: auto; }
+        
+        .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; min-height: 80vh; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; }
+        .empty-icon { font-size: 55px; color: var(--p); opacity: 0.15; margin-bottom: 15px; }
+
+        .profile-top { display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+        .avatar-container { position: relative; width: 100px; height: 100px; margin-bottom: 15px; }
+        .avatar-container img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--border); object-fit: cover; }
+        .status-dot { position: absolute; bottom: 8px; right: 8px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; background: var(--green); }
+        
+        /* شارة التوثيق المشرشرة */
+        .verify-badge { color: var(--p); font-size: 20px; margin-right: 8px; display: none; }
+
+        .group-header { padding: 15px 20px 5px; font-size: 12px; color: #a4b0be; font-weight: bold; text-align: right; }
+        .settings-group { background: #fff; border: 1px solid var(--border); border-radius: 18px; margin: 0 15px 15px; overflow: hidden; }
+        .setting-item { display: flex; align-items: center; padding: 14px 15px; cursor: pointer; border-bottom: 1px solid var(--border); text-align: right; }
+        .setting-item i { width: 30px; color: var(--p); font-size: 16px; margin-left: 10px; }
+        .setting-text { flex: 1; font-size: 14px; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #f0f0f0; z-index: 2000; }
+        .nav-item { color: #bdc3c7; font-size: 22px; cursor: pointer; }
+        .nav-item.active { color: var(--p); }
+        .plus-btn { background: var(--p); color: #fff !important; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -30px; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); }
+
+        /* إطار الدعم الفني */
+        .support-box { margin-top: 30px; padding: 15px; border: 2px dashed var(--border); border-radius: 15px; text-align: center; }
+        .support-link { color: var(--p); text-decoration: none; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        /* النوافذ المنبثقة */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: #fff; width: 90%; max-width: 320px; border-radius: 25px; padding: 25px; text-align: center; position: relative; }
+        .lang-opt { padding: 15px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: 600; }
+        .lang-opt:hover { background: var(--gray); color: var(--p); }
+    </style>
+</head>
+<body>
+
+    <div id="auth-check">
+        <div style="width:40px; height:40px; border:4px solid var(--gray); border-top-color:var(--p); border-radius:50%; animation: spin 1s infinite linear;"></div>
+        <div id="welcome-user" class="welcome-msg">جاري التحميل...</div>
+    </div>
+
+    <header><div class="logo">ONE 1</div></header>
+
+    <div id="home" class="page active">
+        <div class="empty-state"><i class="fa-solid fa-clone empty-icon"></i><div class="empty-text">لم يتم نشر شيء بعد</div></div>
+    </div>
+
+    <div id="chats" class="page">
+        <div class="empty-state">
+            <i class="fa-regular fa-comments empty-icon"></i>
+            <div class="empty-text">لا توجد محادثات حالياً</div>
+            <div class="support-box">
+                <a href="https://wa.me/972592738901" class="support-link"><i class="fa-brands fa-whatsapp"></i> تواصل مع الدعم الفني</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="favs" class="page">
+        <div class="empty-state"><i class="fa-regular fa-heart empty-icon"></i><div class="empty-text">لم يتم إضافة شيء للمفضلة</div></div>
+    </div>
+
+    <div id="profile" class="page">
+        <div class="profile-top">
+            <div class="avatar-container" onclick="document.getElementById('fInp').click()">
+                <img src="" id="uImg"><div class="status-dot"></div>
+                <input type="file" id="fInp" hidden onchange="upImg(this)">
+            </div>
+            <div style="display:flex; align-items:center;">
+                <h2 id="uName" style="margin:0">...</h2>
+                <i class="fa-solid fa-badge-check verify-badge" id="vBadge"></i>
+            </div>
+            <p id="uEmail" style="font-size:12px; color:#aaa;"></p>
+        </div>
+
+        <div class="group-header">إعدادات الحساب</div>
+        <div class="settings-group">
+            <div class="setting-item" onclick="openM('name')"><i class="fa-regular fa-user"></i><span class="setting-text">تغيير الاسم</span></div>
+            <div class="setting-item" onclick="openM('pass')"><i class="fa-solid fa-key"></i><span class="setting-text">تغيير كلمة السر</span></div>
+            <div class="setting-item" onclick="openM('del')" style="color:var(--red)"><i class="fa-solid fa-trash-can"></i><span class="setting-text">حذف الحساب نهائياً</span></div>
+        </div>
+
+        <div class="group-header">الخصوصية</div>
+        <div class="settings-group">
+            <div class="setting-item" onclick="openM('block')"><i class="fa-solid fa-user-lock"></i><span class="setting-text">إدارة الحظر</span></div>
+            <div class="setting-item">
+                <i class="fa-solid fa-eye-slash"></i><span class="setting-text">إخفاء حالة المتصل</span>
+                <input type="checkbox" style="width:18px; height:18px;">
+            </div>
+        </div>
+
+        <div class="group-header">التفضيلات</div>
+        <div class="settings-group">
+            <div class="setting-item" onclick="openM('lang')"><i class="fa-solid fa-globe"></i><span class="setting-text">اللغة</span></div>
+        </div>
+
+        <div class="settings-group">
+            <div class="setting-item" onclick="signOut(auth)" style="color:var(--red)"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="setting-text">تسجيل الخروج</span></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="tab('profile', this)"><i class="fa-solid fa-circle-user"></i></div>
+        <div class="nav-item" onclick="tab('chats', this)"><i class="fa-regular fa-comment"></i></div>
+        <div class="nav-item plus-btn"><i class="fa-solid fa-plus"></i></div>
+        <div class="nav-item" onclick="tab('favs', this)"><i class="fa-regular fa-heart"></i></div>
+        <div class="nav-item active" onclick="tab('home', this)"><i class="fa-solid fa-house"></i></div>
+    </nav>
+
+    <div id="m" class="modal">
+        <div class="modal-content" id="mContent">
+            <h3 id="mT"></h3>
+            <div id="mBody"></div>
+            <p onclick="closeM()" style="margin-top:20px; cursor:pointer; color:#aaa; font-size:13px;">إغلاق</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const config = { apiKey: "AIzaSyDj1jWQZHnELXe_eFkfGpi3F3_jPGhPm7I", authDomain: "one1-95c0e.firebaseapp.com", projectId: "one1-95c0e", appId: "1:1090900617422:web:f6e9c11bb7a090c39ec89f" };
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                onSnapshot(doc(db, "users", user.uid), (ds) => {
+                    if (ds.exists()) {
+                        const d = ds.data();
+                        document.getElementById('uName').innerText = d.name || "مستخدم";
+                        document.getElementById('uEmail').innerText = user.email;
+                        document.getElementById('uImg').src = d.photo || `https://ui-avatars.com/api/?background=6c5ce7&color=fff&name=${d.name}`;
+                        
+                        // تصحيح ظهور الشارة
+                        document.getElementById('vBadge').style.display = d.isVerified ? 'inline-block' : 'none';
+
+                        const welcome = document.getElementById('welcome-user');
+                        welcome.innerText = `أهلاً بك، ${d.name || ''}`;
+                        welcome.classList.add('show');
+
+                        setTimeout(() => {
+                            document.getElementById('auth-check').style.display = 'none';
+                            document.body.style.display = 'block';
+                        }, 1500);
+                    }
+                });
+            } else { window.location.href = "auth.html"; }
+        });
+
+        window.tab = (id, el) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        };
+
+        window.openM = (type) => {
+            const m = document.getElementById('m');
+            const mT = document.getElementById('mT');
+            const mBody = document.getElementById('mBody');
+            m.style.display = 'flex';
+            mBody.innerHTML = '';
+
+            if(type === 'name') {
+                mT.innerText = "تغيير الاسم";
+                mBody.innerHTML = `<input type="text" id="newN" placeholder="الاسم الجديد" style="width:100%; padding:12px; border:1px solid #eee; border-radius:10px; text-align:center; margin:15px 0;">
+                                   <button onclick="updateName()" style="width:100%; padding:12px; background:var(--p); color:#fff; border:none; border-radius:10px; font-weight:bold;">حفظ التغييرات</button>`;
+            } else if(type === 'lang') {
+                mT.innerText = "اختر اللغة";
+                mBody.innerHTML = `<div class="lang-opt" onclick="closeM()">العربية (AR)</div>
+                                   <div class="lang-opt" onclick="closeM()">English (EN)</div>`;
+            } else if(type === 'block') {
+                mT.innerText = "قائمة الحظر";
+                mBody.innerHTML = `<div style="padding:20px; color:#aaa; font-size:14px;">لا يوجد مستخدمون محظورون حالياً.</div>`;
+            } else if(type === 'pass') {
+                mT.innerText = "كلمة السر";
+                mBody.innerHTML = `<p style="font-size:13px; color:#777;">سنرسل رابط التغيير لبريدك</p>
+                                   <button onclick="resetPass()" style="width:100%; padding:12px; background:var(--p); color:#fff; border:none; border-radius:10px; font-weight:bold;">إرسال الرابط</button>`;
+            } else if(type === 'del') {
+                mT.innerText = "حذف الحساب";
+                mBody.innerHTML = `<p style="color:var(--red); font-weight:bold;">هذا الإجراء نهائي!</p>
+                                   <button onclick="delAccount()" style="width:100%; padding:12px; background:var(--red); color:#fff; border:none; border-radius:10px; font-weight:bold;">تأكيد الحذف النهائي</button>`;
+            }
+        };
+
+        window.closeM = () => document.getElementById('m').style.display = 'none';
+
+        window.updateName = async () => {
+            const n = document.getElementById('newN').value;
+            if(n) await updateDoc(doc(db, "users", auth.currentUser.uid), { name: n });
+            closeM();
+        };
+
+        window.resetPass = async () => {
+            await sendPasswordResetEmail(auth, auth.currentUser.email);
+            alert("تم إرسال الرابط");
+            closeM();
+        };
+
+        window.delAccount = async () => {
+            await deleteDoc(doc(db, "users", auth.currentUser.uid));
+            deleteUser(auth.currentUser).then(() => window.location.href="auth.html");
+        };
+
+        window.upImg = (input) => {
+            const f = input.files[0];
+            if(f){
+                const r = new FileReader();
+                r.onload = async (e) => await updateDoc(doc(db, "users", auth.currentUser.uid), { photo: e.target.result });
+                r.readAsDataURL(f);
+            }
+        };
+
+        window.signOut = () => signOut(auth);
+    </script>
+    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+</body>
+</html>
